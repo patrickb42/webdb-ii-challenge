@@ -9,7 +9,7 @@ const {
   insert: insertCar,
   update: updateCar,
   remove: removeCar,
-} = require('../data/Cars');
+} = require('../data/cars');
 
 router.get('/', async (req, res) => {
   try {
