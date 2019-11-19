@@ -11,64 +11,79 @@ const {
   remove: removeCar,
 } = require('../data/cars');
 
-router.get('/', async (req, res) => {
+const template = ({
+  dbOperation,
+  dbOperationArg = {},
+  operationFailed,
+  operationFailureCode,
+  operationFailureObject,
+  opperationSuccessCode,
+  operationErrorMessage,
+}) => async (req, res) => {
   try {
-    const result = await getCars();
-    return (result.length === 0)
-      ? res.status(404).json({ message: 'no cars found' })
-      : res.status(200).json(result);
+    const result = await dbOperation(dbOperationArg);
+    return (operationFailed(result))
+      ? res.status(operationFailureCode).json(operationFailureObject)
+      : res.status(opperationSuccessCode).json(result);
   } catch (error) {
     return res.status(500).json({
       error: error.response,
-      message: 'Error getting cars',
+      message: operationErrorMessage,
     });
   }
+};
+
+router.get('/', (req, res) => {
+  template({
+    dbOperation: getCars,
+    operationFailed: (result) => (result.length === 0),
+    operationFailureCode: 404,
+    operationFailureObject: { message: 'No cars found' },
+    opperationSuccessCode: 200,
+    operationErrorMessage: 'Error getting cars',
+  })(req, res);
 });
 
 router.get('/:id', verifyCarId, async (req, res) => res.status(200).json(req.car));
 
-router.post('/', validateCar, async (req, res) => {
-  try {
-    const result = await insertCar({ car: req.car });
-    return (result === undefined)
-      ? res.status(500).json({ message: 'Error adding car' })
-      : res.status(200).json(result);
-  } catch (error) {
-    return res.status(500).json({
-      error: error.response,
-      message: 'Error adding car',
-    });
-  }
+router.post('/', validateCar, (req, res) => {
+  template({
+    dbOperation: insertCar,
+    dbOperationArg: { car: req.car },
+    operationFailed: (result) => (result === undefined),
+    operationFailureCode: 500,
+    operationFailureObject: { message: 'Error adding car' },
+    opperationSuccessCode: 200,
+    operationErrorMessage: 'Error adding car',
+  })(req, res);
 });
 
-router.put('/:id', verifyCarId, validateCar, async (req, res) => {
+router.put('/:id', verifyCarId, validateCar, (req, res) => {
   const { id } = req.params;
 
-  try {
-    const result = await updateCar({ id, changes: req.car });
-    return (result === undefined)
-      ? res.status(500).json({ message: `Error updating id ${id}` })
-      : res.status(200).json(result);
-  } catch (error) {
-    return res.status(500).json({
-      error: error.response,
-      message: `Error updating id ${id}`,
-    });
-  }
+  template({
+    dbOperation: updateCar,
+    dbOperationArg: { id, changes: req.car },
+    operationFailed: (result) => (result === undefined),
+    operationFailureCode: 500,
+    operationFailureObject: { message: `Error updating id ${id}` },
+    opperationSuccessCode: 200,
+    operationErrorMessage: `Error updating ${id}`,
+  })(req, res);
 });
 
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', (req, res) => {
   const { id } = req.params;
 
-  try {
-    const result = await removeCar({ id });
-    return res.status(200).json(result);
-  } catch (error) {
-    return res.status(500).json({
-      error: error.response,
-      message: `Error removing id ${id}`,
-    });
-  }
+  template({
+    dbOperation: removeCar,
+    dbOperationArg: { id },
+    operationFailed: () => (false),
+    operationFailureCode: 500,
+    operationFailureObject: { message: 'This code should not be reached' },
+    opperationSuccessCode: 200,
+    operationErrorMessage: `Error updating ${id}`,
+  })(req, res);
 });
 
 module.exports = { router };
