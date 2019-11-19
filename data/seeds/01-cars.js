@@ -33,4 +33,4 @@ exports.seed = (knex) => knex('cars')
       model: 'model test',
       mileage: 5.1,
     },
-]));
+  ]));
