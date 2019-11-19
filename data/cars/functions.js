@@ -9,8 +9,8 @@ const get = ({ id } = {}) => {
       .where('id', id);
 };
 
-const insert = ({ account }) => db(TABLE)
-  .insert(account)
+const insert = ({ car }) => db(TABLE)
+  .insert(car)
   .then(([id]) => get({ id }));
 
 const update = ({ id, changes }) => db(TABLE)

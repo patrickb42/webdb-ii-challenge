@@ -52,7 +52,7 @@ router.post('/', validateCar, (req, res) => {
     dbOperationArg: { car: req.car },
     operationFailed: (result) => (result === undefined),
     operationFailureCode: 500,
-    operationFailureObject: { message: 'Error adding car' },
+    operationFailureObject: { message: 'Car not added due to server error' },
     opperationSuccessCode: 200,
     operationErrorMessage: 'Error adding car',
   })(req, res);
